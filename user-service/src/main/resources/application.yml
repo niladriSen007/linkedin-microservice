@@ -2,7 +2,7 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/linkedin-userdb
+    url: jdbc:postgresql://user-database:5432/linkedin-userdb
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
@@ -15,5 +15,11 @@ server:
   servlet:
     context-path: /users
   port: 9020
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/
 jwt:
   secretKey: iuhiuhiuyihg8hohgoihoihoihiohlhlkjhglhkjhlkhlkhioguogh

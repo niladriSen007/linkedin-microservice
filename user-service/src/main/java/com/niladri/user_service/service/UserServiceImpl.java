@@ -39,8 +39,9 @@ public class UserServiceImpl implements IUserService {
     public String login(LoginRequestDto loginRequestDto) {
         log.info("Logging in user: {}", loginRequestDto);
         User isUserExists = userRepository.findByEmail(loginRequestDto.getEmail()).orElseThrow(() ->
-                new ResourceNotFound("User not found with email: " + loginRequestDto.getEmail())
+                new ResourceNotFound("User not found with email id: " + loginRequestDto.getEmail())
         );
+        log.info("User found with email id: {}", isUserExists);
         boolean isPasswordMatched = PasswordUtils.comparePassword(loginRequestDto.getPassword(), isUserExists.getPassword());
         if (!isPasswordMatched) throw new BadRequest("Invalid password");
         log.info("User logged in successfully: {}", isUserExists);

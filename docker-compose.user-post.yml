@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  posts-database:
+    image: postgres:latest
+    container_name: posts-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: linkedin-postdb
+    ports:
+      - "5432:5432"
+    networks:
+      - linkedin-network
+    volumes:
+      - posts-db-data:/var/lib/postgresql/data
+
+  user-database:
+    image: postgres:latest
+    container_name: user-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: linkedin-userdb
+    ports:
+      - "5433:5432"
+    networks:
+      - linkedin-network
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+
+  post-service:
+    build:
+      context: ./post-service
+      dockerfile: Dockerfile
+    container_name: post-service
+    ports:
+      - "9010:9010"
+    networks:
+      - linkedin-network
+    depends_on:
+      - posts-database
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "9020:9020"
+    networks:
+      - linkedin-network
+    depends_on:
+      - user-database
+
+volumes:
+  posts-db-data:
+  user-db-data:
+
+networks:
+  linkedin-network:
+    driver: bridge

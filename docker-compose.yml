@@ -1,0 +1,113 @@
+version: "3.9"
+
+services:
+  posts-database:
+    image: postgres:latest
+    container_name: posts-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: linkedin-postdb
+    ports:
+      - "5432:5432"
+    networks:
+      - linkedin-network
+    volumes:
+      - posts-db-data:/var/lib/postgresql/data
+
+  user-database:
+    image: postgres:latest
+    container_name: user-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: linkedin-userdb
+    ports:
+      - "5433:5432"
+    networks:
+      - linkedin-network
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+
+  discovery-service:
+    build:
+      context: ./discovery-service
+      dockerfile: Dockerfile
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    networks:
+      - linkedin-network
+
+  post-service:
+    build:
+      context: ./post-service
+      dockerfile: Dockerfile
+    container_name: post-service
+    ports:
+      - "9010:9010"
+    networks:
+      - linkedin-network
+    depends_on:
+      - discovery-service
+      - posts-database
+    working_dir: /app
+    volumes:
+      - ./post-service:/app
+      # Optionally speed up builds by sharing host Maven cache (uncomment and set an absolute Windows path if desired)
+      # - ${USERPROFILE}\\.m2\\repository:/root/.m2/repository
+    environment:
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      # Polling-based restart like chokidar/watchpack (interval and quiet period)
+      SPRING_DEVTOOLS_RESTART_POLL_INTERVAL: "2s"
+      SPRING_DEVTOOLS_RESTART_QUIET_PERIOD: "1s"
+      # Watch extra non-classpath paths (so template/resource edits reload without a Build)
+      SPRING_DEVTOOLS_RESTART_ADDITIONAL_PATHS: "src/main/resources"
+      # Optional: use a trigger file for manual restarts in slow filesystems (uncomment next line and touch the file to restart)
+      # SPRING_DEVTOOLS_RESTART_TRIGGER_FILE: ".reloadtrigger"
+    command: ./mvnw -DskipTests=true spring-boot:run
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "9020:9020"
+    networks:
+      - linkedin-network
+    depends_on:
+      - discovery-service
+      - user-database
+    working_dir: /app
+    volumes:
+      - ./user-service:/app
+      # Optionally speed up builds by sharing host Maven cache (uncomment and set an absolute Windows path if desired)
+      # - ${USERPROFILE}\\.m2\\repository:/root/.m2/repository
+    environment:
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_RESTART_POLL_INTERVAL: "2s"
+      SPRING_DEVTOOLS_RESTART_QUIET_PERIOD: "1s"
+      SPRING_DEVTOOLS_RESTART_ADDITIONAL_PATHS: "src/main/resources"
+      # SPRING_DEVTOOLS_RESTART_TRIGGER_FILE: ".reloadtrigger"
+    command: ./mvnw -DskipTests=true spring-boot:run
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - linkedin-network
+    depends_on:
+      - discovery-service
+
+volumes:
+  posts-db-data:
+  user-db-data:
+
+networks:
+  linkedin-network:
+    driver: bridge

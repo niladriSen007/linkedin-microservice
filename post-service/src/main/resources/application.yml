@@ -2,7 +2,7 @@ spring:
   application:
     name: post-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/linkedin-postdb
+    url: jdbc:postgresql://posts-database:5432/linkedin-postdb
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
@@ -14,5 +14,11 @@ server:
   port: 9010
   servlet:
     context-path: /posts
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/
 
 

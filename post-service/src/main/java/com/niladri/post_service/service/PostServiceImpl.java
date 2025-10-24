@@ -6,6 +6,7 @@ import com.niladri.post_service.exception.ResourceNotFound;
 import com.niladri.post_service.mapper.ModelMapper;
 import com.niladri.post_service.model.Posts;
 import com.niladri.post_service.repository.PostRepository;
+import com.niladri.post_service.store.UserContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,9 @@ public class PostServiceImpl implements IPostService {
     @Override
     public PostResponseDto createPost(PostRequestDto postRequest) {
         log.info("Creating post in post service: {}", postRequest);
+        Long userId = UserContextHolder.getCurrentUserId();
         Posts post = ModelMapper.mapToPost(postRequest);
-        post.setUserId(1L);
+        post.setUserId(userId);
         Posts savedPost = postRepository.save(post);
         log.info("Post created successfully: {}", savedPost);
         return ModelMapper.mapToPostResponseDto(savedPost);

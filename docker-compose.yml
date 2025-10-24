@@ -29,6 +29,20 @@ services:
     volumes:
       - user-db-data:/var/lib/postgresql/data
 
+  connection-database:
+    image: postgres:latest
+    container_name: connection-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: linkedin-connectiondb
+    ports:
+      - "5434:5432"
+    networks:
+      - linkedin-network
+    volumes:
+      - connection-db-data:/var/lib/postgresql/data
+
   discovery-service:
     build:
       context: ./discovery-service
@@ -92,6 +106,31 @@ services:
       # SPRING_DEVTOOLS_RESTART_TRIGGER_FILE: ".reloadtrigger"
     command: ./mvnw -DskipTests=true spring-boot:run
 
+  connection-service:
+    build:
+      context: ./connection-service
+      dockerfile: Dockerfile
+    container_name: connection-service
+    ports:
+      - "9030:9030"
+    networks:
+      - linkedin-network
+    depends_on:
+      - discovery-service
+      - connection-database
+    working_dir: /app
+    volumes:
+      - ./connection-service:/app
+      # Optionally speed up builds by sharing host Maven cache (uncomment and set an absolute Windows path if desired)
+      # - ${USERPROFILE}\.m2\\repository:/root/.m2/repository
+    environment:
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_RESTART_POLL_INTERVAL: "2s"
+      SPRING_DEVTOOLS_RESTART_QUIET_PERIOD: "1s"
+      SPRING_DEVTOOLS_RESTART_ADDITIONAL_PATHS: "src/main/resources"
+      # SPRING_DEVTOOLS_RESTART_TRIGGER_FILE: ".reloadtrigger"
+    command: ./mvnw -DskipTests=true spring-boot:run
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -107,6 +146,7 @@ services:
 volumes:
   posts-db-data:
   user-db-data:
+  connection-db-data:
 
 networks:
   linkedin-network:

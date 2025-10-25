@@ -1,6 +1,16 @@
 spring:
   application:
     name: user-service
+  cache:
+    type: redis
+    redis:
+      time-to-live: 10m
+  data:
+    redis:
+      host: redis-cache
+      port: 6379
+      ssl:
+        enabled: false
   datasource:
     url: jdbc:postgresql://user-database:5432/linkedin-userdb
     username: postgres

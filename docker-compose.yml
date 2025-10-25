@@ -43,6 +43,22 @@ services:
     volumes:
       - connection-db-data:/var/lib/postgresql/data
 
+  redis-cache:
+    image: redis:latest
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - linkedin-network
+
   discovery-service:
     build:
       context: ./discovery-service
@@ -91,8 +107,9 @@ services:
     networks:
       - linkedin-network
     depends_on:
-      - discovery-service
+      - redis-cache
       - user-database
+      - discovery-service
     working_dir: /app
     volumes:
       - ./user-service:/app
@@ -147,6 +164,7 @@ volumes:
   posts-db-data:
   user-db-data:
   connection-db-data:
+  redis-data:
 
 networks:
   linkedin-network:

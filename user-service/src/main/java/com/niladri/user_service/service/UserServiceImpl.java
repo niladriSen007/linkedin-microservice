@@ -11,6 +11,7 @@ import com.niladri.user_service.repository.UserRepository;
 import com.niladri.user_service.utils.PasswordUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,6 +52,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+//    @Cacheable(cacheNames = "userCache", key = "#userdIdList")
     public List<UserResponseDto> batchUser(List<Long> userdIdList) {
         log.info("Batching users: {}", userdIdList);
         List<User> users = userRepository.findAllByIdIn(userdIdList);

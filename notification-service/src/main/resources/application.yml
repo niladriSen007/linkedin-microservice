@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: notification-service
+  datasource:
+    url: jdbc:postgresql://notification-database:5432/linkedin-notificationdb
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+server:
+  port: 9040
+  servlet:
+    context-path: /notifications
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/

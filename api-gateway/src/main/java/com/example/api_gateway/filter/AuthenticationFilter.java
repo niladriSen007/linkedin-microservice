@@ -23,9 +23,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            log.info("AuthenticationFilter is called" + exchange.getRequest().getURI());
+            log.info("AuthenticationFilter is called " + exchange.getRequest().getURI());
 
             final String tokenHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+
+            log.info(tokenHeader, "tokenHeader");
 
             if (tokenHeader == null || !tokenHeader.startsWith("Bearer")) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -34,15 +36,18 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             }
 
             final String token = tokenHeader.substring(7);
+
+
             try {
                 String userId = jwtService.extractUserIdFromToken(token);
+                log.info("userId - {}" + userId);
                 return chain.filter(
                         exchange.mutate().request(
                                 req -> req.header("X-User-Id", userId)
                         ).build());
             } catch (JwtException ex) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                log.info("Unauthorized request in catch {}",ex.getLocalizedMessage());
+                log.info("Unauthorized request in catch {}", ex.getLocalizedMessage());
                 return exchange.getResponse().setComplete();
             }
         };

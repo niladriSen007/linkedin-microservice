@@ -43,6 +43,20 @@ services:
     volumes:
       - connection-db-data:/var/lib/postgresql/data
 
+  notification-database:
+    image: postgres:latest
+    container_name: notification-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: linkedin-notificationdb
+    ports:
+      - "5435:5432"
+    networks:
+      - linkedin-network
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+
   redis-cache:
     image: redis:latest
     container_name: redis-cache
@@ -58,6 +72,48 @@ services:
       retries: 5
     networks:
       - linkedin-network
+
+  kafka-server:
+    image: confluentinc/cp-kafka:7.5.0 # Or a newer version supporting KRaft
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093" # For inter-broker communication if you have multiple brokers
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_BROKER_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-server:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-server:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'EmptNWtoR4GGWx-BH6nGLQ'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    volumes:
+      - ./kafka-server/data:/var/lib/kafka/data
+    networks:
+      - linkedin-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-cluster-ui
+    ports:
+      - "8000:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-server:9092
+    depends_on:
+      - kafka-server
+    networks:
+      - linkedin-network
+
 
   discovery-service:
     build:
@@ -79,8 +135,10 @@ services:
     networks:
       - linkedin-network
     depends_on:
+      - redis-cache
       - discovery-service
       - posts-database
+      - kafka-server
     working_dir: /app
     volumes:
       - ./post-service:/app
@@ -110,6 +168,7 @@ services:
       - redis-cache
       - user-database
       - discovery-service
+      - kafka-server
     working_dir: /app
     volumes:
       - ./user-service:/app
@@ -133,6 +192,7 @@ services:
     networks:
       - linkedin-network
     depends_on:
+      - kafka-server
       - discovery-service
       - connection-database
     working_dir: /app
@@ -158,6 +218,7 @@ services:
     networks:
       - linkedin-network
     depends_on:
+      - kafka-server
       - discovery-service
 
 volumes:
@@ -165,6 +226,7 @@ volumes:
   user-db-data:
   connection-db-data:
   redis-data:
+  kafka-data:
 
 networks:
   linkedin-network:

@@ -1,4 +1,4 @@
-package com.niladri.post_service;
+package com.niladri.connection_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
-public class PostServiceApplication {
+public class ConnectionServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PostServiceApplication.class, args);
+		SpringApplication.run(ConnectionServiceApplication.class, args);
 	}
 
 }

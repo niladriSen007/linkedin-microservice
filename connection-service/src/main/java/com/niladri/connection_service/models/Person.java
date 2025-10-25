@@ -20,4 +20,9 @@ public class Person {
     private Long userId;
 
     private String name;
+
+    private Long connectionUserId;
+
+    @Enumerated(EnumType.STRING)
+    private ConnectionStatus connectionStatus=ConnectionStatus.PENDING;
 }

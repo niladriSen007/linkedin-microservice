@@ -8,10 +8,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/core")
@@ -28,10 +27,26 @@ public class UserController {
         return new ResponseEntity<>(userDto, HttpStatus.CREATED);
     }
 
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<Boolean> getUserById(@PathVariable Long userId) {
+        log.info("Getting user existence by id: {}", userId);
+        Boolean isUserExist = userService.getUserById(userId);
+        return new ResponseEntity<>(isUserExist, HttpStatus.OK);
+    }
+
+    @PostMapping("/batch")
+    public ResponseEntity<List<UserResponseDto>> batchUser(@RequestBody List<Long> userdIdList) {
+        log.info("Batching users: {}", userdIdList);
+        List<UserResponseDto> userDtoList = userService.batchUser(userdIdList);
+        return new ResponseEntity<>(userDtoList, HttpStatus.CREATED);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody LoginRequestDto loginRequestDto) {
         log.info("Logging in user: {}", loginRequestDto);
         String token = userService.login(loginRequestDto);
         return ResponseEntity.ok(token);
     }
+
 }

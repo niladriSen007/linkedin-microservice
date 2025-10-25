@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -47,4 +49,23 @@ public class UserServiceImpl implements IUserService {
         log.info("User logged in successfully: {}", isUserExists);
         return jwtService.generateAccessToken(isUserExists);
     }
+
+    @Override
+    public List<UserResponseDto> batchUser(List<Long> userdIdList) {
+        log.info("Batching users: {}", userdIdList);
+        List<User> users = userRepository.findAllByIdIn(userdIdList);
+        return users.stream().map(ModelMapper::mapToUserResponseDto).toList();
+    }
+
+    @Override
+    public Boolean getUserById(Long userId) {
+        log.info("Getting user by id: {}", userId);
+        User isUserExists = userRepository.findById(userId).orElseThrow(() ->
+                new ResourceNotFound("User not found with id: " + userId)
+        );
+        log.info("User found with id: {}", isUserExists);
+        return true;
+    }
+
+
 }

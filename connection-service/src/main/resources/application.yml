@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: connection-service
+  datasource:
+    url: jdbc:postgresql://connection-database:5432/linkedin-connectiondb
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka/
+server:
+  servlet:
+    context-path: /connections
+  port: 9030

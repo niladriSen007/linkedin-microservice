@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 public class PostLikeKafkaProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void publishPostLikeEvent(String topicName, Long eventId, PostLikeEvent event) {
-        kafkaTemplate.send(topicName, eventId.toString(), event)
+    public void publishPostLikeEvent(String topicName, PostLikeEvent event) {
+        kafkaTemplate.send(topicName,  event)
                 .whenComplete((result, err) -> {
                     if (err != null) {
                         System.out.println("Error publishing post like event: " + err.getMessage());

@@ -74,7 +74,7 @@ services:
       - linkedin-network
 
   kafka-server:
-    image: confluentinc/cp-kafka:7.5.0 # Or a newer version supporting KRaft
+    image: confluentinc/cp-kafka:7.7.1
     container_name: kafka
     ports:
       - "9092:9092"
@@ -96,8 +96,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-    volumes:
-      - ./kafka-server/data:/var/lib/kafka/data
+#    volumes:
+#      - ./kafka-server/data:/var/lib/kafka/data
     networks:
       - linkedin-network
 
@@ -208,6 +208,31 @@ services:
       # SPRING_DEVTOOLS_RESTART_TRIGGER_FILE: ".reloadtrigger"
     command: ./mvnw -DskipTests=true spring-boot:run
 
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "9040:9040"
+    networks:
+      - linkedin-network
+    depends_on:
+      - kafka-server
+      - discovery-service
+      - notification-database
+    working_dir: /app
+    volumes:
+      - ./notification-service:/app
+    environment:
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_RESTART_POLL_INTERVAL: "2s"
+      SPRING_DEVTOOLS_RESTART_QUIET_PERIOD: "1s"
+      SPRING_DEVTOOLS_RESTART_ADDITIONAL_PATHS: "src/main/resources"
+      # SPRING_DEVTOOLS_RESTART_TRIGGER_FILE: ".reloadtrigger"
+    command: ./mvnw -DskipTests=true spring-boot:run
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -220,6 +245,10 @@ services:
     depends_on:
       - kafka-server
       - discovery-service
+      - post-service
+      - user-service
+      - connection-service
+      - notification-service
 
 volumes:
   posts-db-data:
@@ -227,6 +256,7 @@ volumes:
   connection-db-data:
   redis-data:
   kafka-data:
+  notification-db-data:
 
 networks:
   linkedin-network:

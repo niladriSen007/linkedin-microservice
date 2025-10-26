@@ -48,7 +48,7 @@ public class PostLikeServiceImpl implements IPostLikeService {
                 .likedByUserId(currentUserId)
                 .build();
 
-        postLikeKafkaProducer.publishPostLikeEvent("post-like-topic", postId, postLikeEvent);
+        postLikeKafkaProducer.publishPostLikeEvent("post-like-topic", postLikeEvent);
 
 
         log.info("Post liked successfully: {}", postLike);

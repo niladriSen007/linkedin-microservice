@@ -3,8 +3,8 @@ package com.niladri.connection_service.service;
 import com.niladri.connection_service.clients.UserClient;
 import com.niladri.connection_service.dtos.PersonRequest;
 import com.niladri.connection_service.dtos.UserResponse;
-import com.niladri.connection_service.events.AcceptConnectionEvent;
-import com.niladri.connection_service.events.SendConnectionEvent;
+import com.niladri.connection_service.event.AcceptConnectionEvent;
+import com.niladri.connection_service.event.SendConnectionEvent;
 import com.niladri.connection_service.exception.ResourceNotFound;
 import com.niladri.connection_service.mapper.ModelMapper;
 import com.niladri.connection_service.models.ConnectionStatus;
@@ -68,7 +68,7 @@ public class ConnectionServiceImpl implements IConnectionService {
                 .receiverId(person.getConnectionUserId())
                 .build();
 
-        sendConnectionKafkaProducer.publishSendConnectionEvent("send-connection-topic", savedConn.getId(), sendConnectionEvent);
+        sendConnectionKafkaProducer.publishSendConnectionEvent("send-connection-topic", sendConnectionEvent);
         return savedConn;
     }
 
@@ -92,7 +92,6 @@ public class ConnectionServiceImpl implements IConnectionService {
 
         acceptConnectionKafkaProducer.publishAcceptConnectionEvent(
                 "accept-connection-topic",
-                personConnection.getId(),
                 acceptConnectionEvent);
 
         return acceptedConnection;

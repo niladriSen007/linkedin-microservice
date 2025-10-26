@@ -57,7 +57,7 @@ public class KafkaTopicConfig {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.niladri.post_service.*");
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.niladri.*");
         log.info("Kafka Consumer Configured with bootstrap server: {} and group id: {}", bootstrapServer, groupId);
         return new DefaultKafkaConsumerFactory<>(props);
     }
